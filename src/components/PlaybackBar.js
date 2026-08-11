@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, PanResponder } from 'react-native';
 import { colors, radius } from '../theme';
 
@@ -9,35 +9,44 @@ export default function PlaybackBar({
   showThumb = false,
 }) {
   const [thumbVisible, setThumbVisible] = useState(false);
+  const widthRef = useRef(0);
+  const seekRef = useRef(onSeek);
+  seekRef.current = onSeek;
 
-  const updateFromEvent = (evt, width) => {
-    if (!width) return;
-    const { locationX, pageX } = evt.nativeEvent;
-    const value = width > 0 ? Math.min(1, Math.max(0, locationX / width)) : progress;
-    if (onSeek) onSeek(value);
+  const handleSeek = (value) => {
+    if (seekRef.current) seekRef.current(value);
   };
 
-  const panResponder = PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: () => true,
-    onPanResponderGrant: (evt) => {
-      setThumbVisible(true);
-      updateFromEvent(evt, trackWidth);
-    },
-    onPanResponderMove: (evt) => {
-      updateFromEvent(evt, trackWidth);
-    },
-    onPanResponderRelease: () => setThumbVisible(false),
-    onPanResponderTerminate: () => setThumbVisible(false),
-  });
+  const updateFromEventRef = useRef();
+  updateFromEventRef.current = (evt) => {
+    const width = widthRef.current;
+    if (!width) return;
+    const { locationX } = evt.nativeEvent;
+    const value = Math.min(1, Math.max(0, locationX / width));
+    handleSeek(value);
+  };
 
-  let trackWidth = 0;
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        setThumbVisible(true);
+        updateFromEventRef.current(evt);
+      },
+      onPanResponderMove: (evt) => {
+        updateFromEventRef.current(evt);
+      },
+      onPanResponderRelease: () => setThumbVisible(false),
+      onPanResponderTerminate: () => setThumbVisible(false),
+    })
+  ).current;
 
   return (
     <View
       {...panResponder.panHandlers}
       onLayout={(e) => {
-        trackWidth = e.nativeEvent.layout.width;
+        widthRef.current = e.nativeEvent.layout.width;
       }}
       style={{
         height: height + 10,

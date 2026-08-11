@@ -6,9 +6,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { colors, fonts } from '../theme';
 
 const TABS = [
-  { name: 'Home', icon: 'home', iconActive: 'home' },
-  { name: 'Media', icon: 'play-circle-outline', iconActive: 'play-circle' },
-  { name: 'Settings', icon: 'cog-outline', iconActive: 'cog' },
+  { name: 'Home', label: 'Início', icon: 'home', iconActive: 'home' },
+  { name: 'Media', label: 'Mídia', icon: 'play-circle-outline', iconActive: 'play-circle' },
+  { name: 'Settings', label: 'Ajustes', icon: 'cog-outline', iconActive: 'cog' },
 ];
 
 function TabItem({ label, icon, iconActive, focused, onPress }) {
@@ -61,7 +61,7 @@ export default function BottomNav({ state, navigation }) {
           return (
             <TabItem
               key={tab.name}
-              label={tab.name}
+              label={tab.label}
               icon={tab.icon}
               iconActive={tab.iconActive}
               focused={focused}

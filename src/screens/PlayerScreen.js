@@ -13,14 +13,14 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAudioPlayer, useAudioPlayerStatus, setAudioModeAsync } from 'expo-audio';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { File } from 'expo-file-system';
+import { File, Paths } from 'expo-file-system';
 import TopAppBar from '../components/TopAppBar';
 import Artwork from '../components/Artwork';
 import PlaybackBar from '../components/PlaybackBar';
 import TranscriptionView from '../components/TranscriptionView';
 import { useApp } from '../context/AppContext';
 import { transcribeAudio, translateSegments } from '../services/ai';
-import { trackGradient, formatDuration } from '../utils/art';
+import { trackGradient, formatDuration, formatBytes } from '../utils/art';
 import { colors, fonts, spacing, radius } from '../theme';
 
 const BREAKPOINT = 768;
@@ -60,7 +60,7 @@ function ArtworkPanel({ track, isWide }) {
           </Text>
           <Text style={styles.artworkSubtitle}>
             {formatDuration(track.duration)}
-            {track.size ? ` • ${Math.round(track.size / 1024)} KB` : ''}
+            {track.size ? ` • ${formatBytes(track.size)}` : ''}
           </Text>
         </View>
       </View>
@@ -81,7 +81,7 @@ function SubtitleHeader({ sourceLang, targetLang, count }) {
   );
 }
 
-function TrackPlayer({ track, index, tracks, onSeekIndex, navigation }) {
+function TrackPlayer({ track, index, tracks, onSeekIndex, navigation, autoPlay }) {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isWide = width >= BREAKPOINT;
@@ -104,6 +104,12 @@ function TrackPlayer({ track, index, tracks, onSeekIndex, navigation }) {
   }, [track.id]);
 
   useEffect(() => {
+    if (status.isLoaded && autoPlay) {
+      player.play();
+    }
+  }, [status.isLoaded, autoPlay]);
+
+  useEffect(() => {
     if (status.duration && !track.duration) {
       updateTrack(track.id, { duration: status.duration });
     }
@@ -118,10 +124,27 @@ function TrackPlayer({ track, index, tracks, onSeekIndex, navigation }) {
   const generateSubtitles = async () => {
     if (phase === 'transcribing' || phase === 'translating') return;
     setErrorMsg('');
+    setProgressMsg('');
     setPhase('transcribing');
     try {
-      const file = new File(track.uri);
-      const result = await transcribeAudio(file, { apiKey: settings.apiKey });
+      let source = null;
+      try {
+        const candidate = new File(track.uri);
+        if (candidate.exists) source = candidate;
+      } catch (e) {
+        console.warn('local file check failed', track.uri, e);
+      }
+      if (!source) {
+        const res = await fetch(track.uri);
+        if (!res.ok) throw new Error('Não foi possível ler o arquivo de áudio.');
+        const bytes = await res.arrayBuffer();
+        const ext = (String(track.title).match(/\.[a-z0-9]+$/i) || ['.bin'])[0];
+        const tmp = new File(Paths.cache, `transcribe_${track.id}${ext}`);
+        tmp.create({ idempotent: true, overwrite: true });
+        tmp.write(new Uint8Array(bytes));
+        source = tmp;
+      }
+      const result = await transcribeAudio(source, { apiKey: settings.apiKey });
       let finalSegments = result.segments;
       if (
         settings.autoTranslate &&
@@ -271,7 +294,9 @@ function TrackPlayer({ track, index, tracks, onSeekIndex, navigation }) {
             progress={progress}
             showThumb
             height={6}
-            onSeek={(v) => player.seekTo(v * status.duration)}
+            onSeek={(v) => {
+              if (status.duration > 0) player.seekTo(v * status.duration);
+            }}
           />
           <Text style={styles.timeLabel}>{formatTime(status.duration)}</Text>
         </View>
@@ -312,11 +337,20 @@ export default function PlayerScreen({ route, navigation }) {
   const [index, setIndex] = useState(() =>
     Math.max(0, tracks.findIndex((t) => t.id === itemId))
   );
+  const [autoPlay, setAutoPlay] = useState(true);
 
   useEffect(() => {
     const i = tracks.findIndex((t) => t.id === itemId);
-    if (i >= 0) setIndex(i);
+    if (i >= 0) {
+      setIndex(i);
+      setAutoPlay(true);
+    }
   }, [itemId]);
+
+  const handleSeek = (i) => {
+    setIndex(i);
+    setAutoPlay(true);
+  };
 
   const track = tracks[index];
 
@@ -340,7 +374,8 @@ export default function PlayerScreen({ route, navigation }) {
       track={track}
       index={index}
       tracks={tracks}
-      onSeekIndex={setIndex}
+      onSeekIndex={handleSeek}
+      autoPlay={autoPlay}
       navigation={navigation}
     />
   );

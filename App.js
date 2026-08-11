@@ -1,11 +1,30 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import RootNavigator from './src/navigation';
-import { AppProvider } from './src/context/AppContext';
+import { AppProvider, useApp } from './src/context/AppContext';
 import { colors } from './src/theme';
+
+function AppShell() {
+  const { ready } = useApp();
+
+  if (!ready) {
+    return (
+      <View style={{ flex: 1, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator color={colors.primary} size="large" />
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <RootNavigator />
+      <StatusBar style="light" backgroundColor={colors.background} />
+    </View>
+  );
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -22,10 +41,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <AppProvider>
-        <View style={{ flex: 1, backgroundColor: colors.background }}>
-          <RootNavigator />
-          <StatusBar style="light" backgroundColor={colors.background} />
-        </View>
+        <AppShell />
       </AppProvider>
     </SafeAreaProvider>
   );

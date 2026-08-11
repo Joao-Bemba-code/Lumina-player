@@ -18,21 +18,25 @@ export function AppProvider({ children }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const cleaned = cleanLibrary(loadLibrary());
+    const stored = loadLibrary();
+    const cleaned = cleanLibrary(stored);
+    if (cleaned.length !== stored.length) saveLibrary(cleaned);
     setTracks(cleaned);
     setSettings(loadSettings());
-    if (cleaned.length !== loadLibrary().length) saveLibrary(cleaned);
     setReady(true);
   }, []);
 
-  const persistTracks = (next) => {
-    setTracks(next);
-    saveLibrary(next);
+  const persistTracks = (updater) => {
+    setTracks((prev) => {
+      const next = typeof updater === 'function' ? updater(prev) : updater;
+      saveLibrary(next);
+      return next;
+    });
   };
 
   const addTrack = async (asset) => {
     const track = await importAudioFile(asset);
-    persistTracks([track, ...tracks]);
+    persistTracks((prev) => [track, ...prev]);
     return track;
   };
 
@@ -42,18 +46,18 @@ export function AppProvider({ children }) {
     const fresh = deviceTracks.filter(
       (t) => !knownUris.has(t.uri) && !knownIds.has(t.deviceId)
     );
-    if (fresh.length) persistTracks([...fresh, ...tracks]);
+    if (fresh.length) persistTracks((prev) => [...fresh, ...prev]);
     return fresh.length;
   };
 
   const removeTrack = (id) => {
     const track = tracks.find((t) => t.id === id);
     if (track && track.source !== 'device') deleteTrackFile(track.uri);
-    persistTracks(tracks.filter((t) => t.id !== id));
+    persistTracks((prev) => prev.filter((t) => t.id !== id));
   };
 
   const updateTrack = (id, patch) => {
-    persistTracks(tracks.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    persistTracks((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
   };
 
   const setSetting = (key, value) => {

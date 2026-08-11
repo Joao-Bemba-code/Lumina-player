@@ -58,7 +58,7 @@ export default function SettingsScreen() {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.heading}>Settings</Text>
+        <Text style={styles.heading}>Ajustes</Text>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Transcrição automática (grátis)</Text>
@@ -108,6 +108,9 @@ export default function SettingsScreen() {
           <Text style={styles.sectionTitle}>Sobre</Text>
           <Row icon="information-outline" label="Lumina Player">
             <Text style={styles.rowValue}>v1.1.0</Text>
+          </Row>
+          <Row icon="account-outline" label="Criador">
+            <Text style={styles.rowValue}>João Pedro Justino Bemba</Text>
           </Row>
         </View>
       </ScrollView>

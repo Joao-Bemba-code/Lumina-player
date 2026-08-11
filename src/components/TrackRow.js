@@ -3,14 +3,16 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Artwork from './Artwork';
 import IconButton from './IconButton';
-import { trackGradient, formatDuration } from '../utils/art';
+import { trackGradient, formatDuration, formatBytes } from '../utils/art';
 import { colors, fonts, radius } from '../theme';
 
 export default function TrackRow({ track, onPress, onDelete, showSubtitle }) {
   const subtitle = showSubtitle
-    ? `${formatDuration(track.duration)}${track.size ? ` • ${Math.round(track.size / 1024)} KB` : ''}`
-    : track.transcription
-    ? `${track.transcription.segments.length} legendas automáticas`
+    ? `${formatDuration(track.duration)}${track.size ? ` • ${formatBytes(track.size)}` : ''}`
+    : track.transcription?.segments?.length
+    ? `${track.transcription.segments.length} ${
+        track.transcription.segments.length === 1 ? 'legenda automática' : 'legendas automáticas'
+      }`
     : formatDuration(track.duration);
 
   return (

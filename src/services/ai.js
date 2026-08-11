@@ -89,7 +89,7 @@ function primaryLang(code) {
 
 function mapLang(code) {
   const c = String(code || '').toLowerCase();
-  if (c.startsWith('pt')) return c === 'pt-br' ? 'pt-BR' : 'pt';
+  if (c.startsWith('pt')) return 'pt';
   return c;
 }
 

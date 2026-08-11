@@ -64,11 +64,11 @@ export default function TranscriptionView({ lines, activeIndex }) {
 
   useEffect(() => {
     if (!scrollRef.current) return;
-    const pos = positions.current[active?.id];
+    const pos = positions.current[activeIndex];
     if (pos == null) return;
     const target = pos.y - containerHeight.current / 2 + pos.height / 2;
     scrollRef.current.scrollTo({ y: Math.max(0, target), animated: true });
-  }, [activeIndex, active?.id]);
+  }, [activeIndex]);
 
   return (
     <View
@@ -80,13 +80,13 @@ export default function TranscriptionView({ lines, activeIndex }) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-        {lines.map((line) => {
-          const isActive = line.id === activeIndex;
+        {lines.map((line, idx) => {
+          const isActive = idx === activeIndex;
           return (
             <View
               key={line.id}
               onLayout={(e) => {
-                positions.current[line.id] = e.nativeEvent.layout;
+                positions.current[idx] = e.nativeEvent.layout;
               }}
             >
               <CaptionLine line={line} isActive={isActive} />

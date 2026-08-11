@@ -1,0 +1,19 @@
+.git/
+.expo/
+node_modules/
+dist/
+web-build/
+.expo-shared/
+eas-hooks/
+
+# credentials
+*.jks
+*.keystore
+credentials.json
+
+# env files (chave da API)
+.env
+.env.*
+
+# macOS
+.DS_Store

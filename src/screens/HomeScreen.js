@@ -110,7 +110,7 @@ export default function HomeScreen({ navigation }) {
         ) : (
           <MaterialCommunityIcons name="plus" size={18} color={colors.primary} />
         )}
-        <Text style={styles.secondaryButtonText}>{picking ? 'Importando…' : 'Add Media'}</Text>
+        <Text style={styles.secondaryButtonText}>{picking ? 'Importando…' : 'Adicionar mídia'}</Text>
       </Pressable>
     </View>
   );
@@ -136,7 +136,7 @@ export default function HomeScreen({ navigation }) {
         ) : (
           <>
             <View style={styles.headerRow}>
-              <Text style={styles.heading}>Recent Media</Text>
+              <Text style={styles.heading}>Recentes</Text>
               <View style={styles.headerActions}>
                 <Pressable
                   onPress={handleSync}
@@ -165,7 +165,7 @@ export default function HomeScreen({ navigation }) {
                   ) : (
                     <MaterialCommunityIcons name="plus" size={18} color={colors.onSecondaryContainer} />
                   )}
-                  <Text style={styles.addButtonText}>Add Media</Text>
+                  <Text style={styles.addButtonText}>Adicionar</Text>
                 </Pressable>
               </View>
             </View>
@@ -192,7 +192,7 @@ export default function HomeScreen({ navigation }) {
                   <View style={styles.featuredRow}>
                     <View style={styles.featuredTextWrap}>
                       <View style={styles.playingBadge}>
-                        <Text style={styles.playingBadgeText}>Playing Now</Text>
+                        <Text style={styles.playingBadgeText}>Destaque</Text>
                       </View>
                       <Text style={styles.featuredTitle} numberOfLines={1}>
                         {featured.title}

@@ -64,7 +64,7 @@ export default function MediaScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.headerRow}>
-          <Text style={styles.heading}>All Media</Text>
+          <Text style={styles.heading}>Todas as mídias</Text>
           <Pressable
             onPress={handleAdd}
             disabled={picking}
@@ -78,7 +78,7 @@ export default function MediaScreen({ navigation }) {
             ) : (
               <MaterialCommunityIcons name="plus" size={18} color={colors.onSecondaryContainer} />
             )}
-            <Text style={styles.addButtonText}>Add Media</Text>
+            <Text style={styles.addButtonText}>Adicionar</Text>
           </Pressable>
         </View>
 
